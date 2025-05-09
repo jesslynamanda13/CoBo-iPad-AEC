@@ -11,7 +11,7 @@ import UIKit
 struct ImageCarouselComponent: View {
     let screenWidth = UIScreen.main.bounds.width
     @State private var currentIndex = 0
-    @Binding var images: [URL]
+    var images: [URL]
     
     
     

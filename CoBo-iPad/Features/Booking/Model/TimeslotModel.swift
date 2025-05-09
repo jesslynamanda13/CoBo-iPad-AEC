@@ -8,8 +8,21 @@
 import Foundation
 import SwiftData
 
-@Model
-class Timeslot: Hashable {
+struct Timeslot: Hashable, Identifiable, Codable
+{
+   
+    @Attribute(.unique) var recordName: String
+    var startHour: Double
+    var endHour: Double
+    
+    var id: String { recordName }
+    
+    init(recordName: String, startHour: Double, endHour: Double) {
+        self.recordName = recordName
+        self.startHour = startHour
+        self.endHour = endHour
+    }
+    
     var name: String{
         get {
             return "\(doubleToTime(startHour)) - \(doubleToTime(endHour))"
@@ -28,13 +41,6 @@ class Timeslot: Hashable {
         }
     }
     
-    var startHour: Double
-    var endHour: Double
-    
-    init(startHour: Double, endHour: Double) {
-        self.startHour = startHour
-        self.endHour = endHour
-    }
     
     func doubleToTime(_ number: Double) -> String {
         let hour = Int(number.rounded(.towardZero))
@@ -45,5 +51,11 @@ class Timeslot: Hashable {
         
         return "\(stringHour):\(stringMinute)"
     }
+    static func == (lhs: Timeslot, rhs: Timeslot) -> Bool {
+        lhs.id == rhs.id
+    }
     
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+    }
 }

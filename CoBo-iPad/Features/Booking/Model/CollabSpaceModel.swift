@@ -11,7 +11,7 @@ import SwiftData
 import UIKit
 
 class CollabSpace : Hashable, Identifiable, Codable {
-    var id = UUID()
+    @Attribute(.unique) var recordName: String
     var name: String
     var images: [URL]
     var capacity: Int
@@ -19,8 +19,10 @@ class CollabSpace : Hashable, Identifiable, Codable {
     var tableWhiteboardAmount: Int
     var tvAvailable: Bool
     
-    init(id: UUID = UUID(), name: String, images: [URL], capacity: Int, whiteboardAmount: Int, tableWhiteboardAmount: Int, tvAvailable: Bool) {
-        self.id = id
+    var id: String { recordName }
+    
+    init(recordName: String, name: String, images: [URL], capacity: Int, whiteboardAmount: Int, tableWhiteboardAmount: Int, tvAvailable: Bool) {
+        self.recordName = recordName
         self.name = name
         self.images = images
         self.capacity = capacity

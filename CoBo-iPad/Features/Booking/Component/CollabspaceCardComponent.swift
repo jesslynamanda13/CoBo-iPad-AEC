@@ -7,19 +7,20 @@
 
 import SwiftUI
 struct CollabspaceCard : View{
-    @Binding var collabSpace: CollabSpace
+    @EnvironmentObject var databaseVM: DataViewModel
+    @Binding var selectedDate: Date
+    let collabSpace: CollabSpace
     let screenWidth = UIScreen.main.bounds.width
     var body: some View {
         VStack(){
             HStack(alignment: .center){
-                ImageCarouselComponent(images: $collabSpace.images)
+                ImageCarouselComponent(images: collabSpace.images)
                 VStack(alignment: .leading, spacing: 12){
                     Text("\(collabSpace.name)")
                         .fontWeight(.bold)
                         .font(.headline)
                     HStack(alignment:.top){
                         VStack(alignment: .leading,spacing:6){
-                            
                             Text("Facilities")
                                 .foregroundStyle(.gray)
                                 .font(.footnote)
@@ -31,7 +32,7 @@ struct CollabspaceCard : View{
                                             .font(.footnote)
                                         Text("TV").font(.footnote)
                                         Spacer()
-                                    }
+                                    }.frame(maxWidth: 80)
                                 }
                                 
                                 // if table whiteboard is available
@@ -110,70 +111,71 @@ struct CollabspaceCard : View{
                 }
                 .padding(.horizontal)
                 .padding(.bottom, 8)
+                TimeslotManager(databaseVM: _databaseVM, selectedDate: $selectedDate, selectedCollabSpace: collabSpace).environmentObject(databaseVM)
               
-                VStack(spacing: 12){
-                    HStack{
-                        Text("09.00 - 10.00")
-                            .fontWeight(.regular)
-                            .font(.system(size: 15))
-                            .padding(.vertical, 12)
-                            .padding(.horizontal)
-                            .background(
-                                RoundedRectangle(cornerRadius: 8)
-                                    .stroke(Color.gray.opacity(0.4), lineWidth: 0.5)
-                            )
-                        
-                        Text("09.00 - 10.00")
-                            .fontWeight(.regular)
-                            .font(.system(size: 15))
-                            .padding(.vertical, 12)
-                            .padding(.horizontal)
-                            .background(
-                                RoundedRectangle(cornerRadius: 8)
-                                    .stroke(Color.gray.opacity(0.4), lineWidth: 0.5)
-                            )
-                        Text("09.00 - 10.00")
-                            .fontWeight(.regular)
-                            .font(.system(size: 15))
-                            .padding(.vertical, 12)
-                            .padding(.horizontal)
-                            .background(
-                                RoundedRectangle(cornerRadius: 8)
-                                    .stroke(Color.gray.opacity(0.4), lineWidth: 0.5)
-                            )
-                        
-                    }
-                    HStack{
-                        Text("09.00 - 10.00")
-                            .fontWeight(.regular)
-                            .font(.system(size: 15))
-                            .padding(.vertical, 12)
-                            .padding(.horizontal)
-                            .background(
-                                RoundedRectangle(cornerRadius: 8)
-                                    .stroke(Color.gray.opacity(0.4), lineWidth: 0.5)
-                            )
-                        Text("09.00 - 10.00")
-                            .fontWeight(.regular)
-                            .font(.system(size: 15))
-                            .padding(.vertical, 12)
-                            .padding(.horizontal)
-                            .background(
-                                RoundedRectangle(cornerRadius: 8)
-                                    .stroke(Color.gray.opacity(0.4), lineWidth: 0.5)
-                            )
-                        Text("09.00 - 10.00")
-                            .fontWeight(.regular)
-                            .font(.system(size: 15))
-                            .padding(.vertical, 12)
-                            .padding(.horizontal)
-                            .background(
-                                RoundedRectangle(cornerRadius: 8)
-                                    .stroke(Color.gray.opacity(0.4), lineWidth: 0.5)
-                            )
-                        
-                    }
-                }
+//                VStack(spacing: 12){
+//                    HStack{
+//                        Text("09.00 - 10.00")
+//                            .fontWeight(.regular)
+//                            .font(.system(size: 15))
+//                            .padding(.vertical, 12)
+//                            .padding(.horizontal)
+//                            .background(
+//                                RoundedRectangle(cornerRadius: 8)
+//                                    .stroke(Color.gray.opacity(0.4), lineWidth: 0.5)
+//                            )
+//                        
+//                        Text("09.00 - 10.00")
+//                            .fontWeight(.regular)
+//                            .font(.system(size: 15))
+//                            .padding(.vertical, 12)
+//                            .padding(.horizontal)
+//                            .background(
+//                                RoundedRectangle(cornerRadius: 8)
+//                                    .stroke(Color.gray.opacity(0.4), lineWidth: 0.5)
+//                            )
+//                        Text("09.00 - 10.00")
+//                            .fontWeight(.regular)
+//                            .font(.system(size: 15))
+//                            .padding(.vertical, 12)
+//                            .padding(.horizontal)
+//                            .background(
+//                                RoundedRectangle(cornerRadius: 8)
+//                                    .stroke(Color.gray.opacity(0.4), lineWidth: 0.5)
+//                            )
+//                        
+//                    }
+//                    HStack{
+//                        Text("09.00 - 10.00")
+//                            .fontWeight(.regular)
+//                            .font(.system(size: 15))
+//                            .padding(.vertical, 12)
+//                            .padding(.horizontal)
+//                            .background(
+//                                RoundedRectangle(cornerRadius: 8)
+//                                    .stroke(Color.gray.opacity(0.4), lineWidth: 0.5)
+//                            )
+//                        Text("09.00 - 10.00")
+//                            .fontWeight(.regular)
+//                            .font(.system(size: 15))
+//                            .padding(.vertical, 12)
+//                            .padding(.horizontal)
+//                            .background(
+//                                RoundedRectangle(cornerRadius: 8)
+//                                    .stroke(Color.gray.opacity(0.4), lineWidth: 0.5)
+//                            )
+//                        Text("09.00 - 10.00")
+//                            .fontWeight(.regular)
+//                            .font(.system(size: 15))
+//                            .padding(.vertical, 12)
+//                            .padding(.horizontal)
+//                            .background(
+//                                RoundedRectangle(cornerRadius: 8)
+//                                    .stroke(Color.gray.opacity(0.4), lineWidth: 0.5)
+//                            )
+//                        
+//                    }
+//                }
             }
             .padding(.horizontal)
             .padding(.top, 12)

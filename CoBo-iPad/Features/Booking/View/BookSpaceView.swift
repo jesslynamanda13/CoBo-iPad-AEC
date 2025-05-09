@@ -8,8 +8,8 @@ import SwiftUI
 
 struct BookSpaceView: View {
     let screenWidth = UIScreen.main.bounds.width
-    
     @State private var selectedDate: Date = Date.now
+    @EnvironmentObject var databaseVM: DataViewModel
     
     var body: some View {
         VStack {
@@ -29,11 +29,9 @@ struct BookSpaceView: View {
                     .padding(.horizontal, 16)
                 }
             HStack(alignment: .top, spacing: 32){
-                CalendarComponent().frame(maxWidth: 350).padding(.top, 12)
-            
-                CollabspaceManager()
-                
-                
+                CalendarComponent(selectedDate: $selectedDate).frame(maxWidth: 350).padding(.top, 12)
+                CollabSpaceManager(selectedDate: $selectedDate, databaseVM: databaseVM)
+                    .environmentObject(databaseVM)
                
             }
             .safeAreaPadding(.all)

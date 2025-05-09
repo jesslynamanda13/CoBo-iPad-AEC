@@ -7,6 +7,7 @@
 import SwiftUI
 
 struct CalendarComponent: View {
+    @Binding var selectedDate:Date
     @State private var color:Color = .purple
     @State private var date = Date.now
     @State private var holidays: [HolidayDate] = []
@@ -16,7 +17,6 @@ struct CalendarComponent: View {
     let daysInRange : [Date] = Date.now.nextSevenWeekdays()
     
     @State private var days : [Date] = []
-    @State private var selectedDate : Date = Date.now
     
     func isBeforeToday(_ dateCheck: Date) -> Bool {
         let calendar = Calendar.current
@@ -188,6 +188,3 @@ struct CalendarComponent: View {
     }
 }
 
-#Preview {
-    CalendarComponent()
-}

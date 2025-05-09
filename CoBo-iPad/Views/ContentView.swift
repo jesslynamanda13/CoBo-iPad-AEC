@@ -10,9 +10,11 @@ import SwiftData
 
 struct ContentView: View {
     @Environment(\.modelContext) var modelContext
+    @EnvironmentObject var databaseVM : DataViewModel
     var body: some View {
         TabView {
             BookSpaceView()
+                .environmentObject(databaseVM)
                 .tabItem {
                     Label("Book Space", systemImage: "calendar.badge.plus")
                 }

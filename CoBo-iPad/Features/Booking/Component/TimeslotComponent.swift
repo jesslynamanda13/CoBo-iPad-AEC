@@ -6,11 +6,11 @@
 //
 import SwiftUI
 struct TimeslotComponent : View{
-    @Binding var isAvailable: Bool
-    @Binding var timeSlot : Timeslot
+    var timeslot : Timeslot
+    var isAvailable: Bool
     var body: some View{
         if !isAvailable{
-            Text("\(timeSlot.doubleToTime(timeSlot.startHour)) - \(timeSlot.doubleToTime(timeSlot.endHour))")
+            Text("\(timeslot.doubleToTime(timeslot.startHour)) - \(timeslot.doubleToTime(timeslot.endHour))")
                 .foregroundColor(.gray)
                 .fontWeight(.regular)
                 .font(.system(size: 15))
@@ -18,11 +18,11 @@ struct TimeslotComponent : View{
                 .padding(.horizontal)
                 .background(
                     RoundedRectangle(cornerRadius: 8)
-                        .foregroundStyle(Color.gray.opacity(0.6))
+                        .foregroundStyle(Color.gray.opacity(0.3))
                 )
         }
         else{
-            Text("\(timeSlot.doubleToTime(timeSlot.startHour)) - \(timeSlot.doubleToTime(timeSlot.endHour))")
+            Text("\(timeslot.doubleToTime(timeslot.startHour)) - \(timeslot.doubleToTime(timeslot.endHour))")
                 .fontWeight(.regular)
                 .font(.system(size: 15))
                 .padding(.vertical, 12)
