@@ -8,23 +8,12 @@
 
 import SwiftUI
 struct TimeslotManager : View{
-    // take collab space + date
-    // @binding...
+    @ObservedObject var timeslotVM: TimeslotViewModel
     @EnvironmentObject var databaseVM: DataViewModel
-    @StateObject private var timeslotVM: TimeslotViewModel = TimeslotViewModel.stub()
-    @State private var isInitialized = false
-    
-    @Binding var selectedDate:Date
-    var selectedCollabSpace:CollabSpace
-    //
-    //    init(selectedDate: Binding<Date>,
-    //         selectedCollabSpace: CollabSpace,
-    //         databaseVM: DataViewModel) {
-    //        _selectedDate = selectedDate
-    //        self.selectedCollabSpace = selectedCollabSpace
-    //        _timeslotVM = StateObject(wrappedValue: TimeslotViewModel(database: databaseVM.database,selectedDate: $selectedDate, selectedCollabSpace: selectedCollabSpace))
-    //    }
-    
+    var collabSpace: CollabSpace
+    @Binding var selectedCollabSpace : CollabSpace?
+    @Binding var selectedTimeslot : Timeslot?
+
     let columns = [
         GridItem(.flexible(), spacing: 4),
         GridItem(.flexible(), spacing: 4),
@@ -42,25 +31,34 @@ struct TimeslotManager : View{
                     ForEach(timeslots, id: \.self) { timeslot in
                         TimeslotComponent(
                             timeslot: timeslot,
-                            isAvailable: timeSlotsAvailability[timeslot] ?? false
-                        )
+                            isAvailable: true,
+//                            isAvailable: timeSlotsAvailability[timeslot] ?? false,
+                            isSelected: selectedTimeslot == timeslot,
+                            collabSpace: collabSpace,
+                            selectedCollabSpace: selectedCollabSpace
+                        ).onTapGesture {
+                            if(selectedTimeslot == timeslot && selectedCollabSpace == collabSpace){
+                                selectedTimeslot = nil
+                                selectedCollabSpace = nil
+                            }
+                            selectedTimeslot = timeslot
+                            selectedCollabSpace = collabSpace
+                            
+                        }
                     }
                 }
                 
             case .error(let error):
                 Text("Error: \(error)")
             }
-        }.onAppear{
-            if !isInitialized {
-                timeslotVM.configure(
-                    database: databaseVM.database,
-                    selectedDate: selectedDate,
-                    selectedCollabSpace: selectedCollabSpace
-                )
-                timeslotVM.fetchTimeSlot()
-                isInitialized = true
-            }
         }
+        .onAppear{
+            timeslotVM.fetchTimeSlot()
+        }
+        .onChange(of: timeslotVM.id) { _ in
+            timeslotVM.fetchTimeSlot()
+        }
+
         
     }
 }

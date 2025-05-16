@@ -9,17 +9,10 @@ import SwiftUI
 import CloudKit
 
 struct CollabSpaceManager: View {
-    @Binding var selectedDate: Date
-    @EnvironmentObject var databaseVM: DataViewModel
-    @StateObject private var collabSpaceVM: CollabSpaceViewModel
-    
-    init(selectedDate: Binding<Date>, databaseVM: DataViewModel) {
-        _selectedDate = selectedDate 
-        _collabSpaceVM = StateObject(wrappedValue: CollabSpaceViewModel(database: databaseVM.database))
-    }
-    
-    @State var collabSpaceRecords: [CollabSpace] = []
-    
+    @StateObject var collabSpaceVM: CollabSpaceViewModel
+    @Binding var selectedCollabSpace: CollabSpace?
+    @Binding var selectedTimeslot : Timeslot?
+
     let columns = [
         GridItem(.flexible(), spacing: 24),
         GridItem(.flexible(), spacing: 24)
@@ -43,7 +36,7 @@ struct CollabSpaceManager: View {
                 ScrollView{
                     LazyVGrid(columns: columns, spacing: 24) {
                         ForEach(collabSpaces, id: \.self) { space in
-                            CollabspaceCard(selectedDate: $selectedDate, collabSpace: space).environmentObject(databaseVM)
+                            CollabspaceCard(collabSpaceVM: collabSpaceVM, collabSpace: space, selectedCollabSpace: $selectedCollabSpace, selectedTimeslot: $selectedTimeslot, selectedDate: $collabSpaceVM.selectedDate)
                         }
                     }
                     .padding(24)
@@ -59,7 +52,9 @@ struct CollabSpaceManager: View {
         .onAppear {
             collabSpaceVM.fetchCollabRecords()
         }
-        
+        .onChange(of: collabSpaceVM.selectedDate) { newDate in
+            collabSpaceVM.fetchCollabRecords()
+        }
         
     }
 }

@@ -142,6 +142,7 @@ struct CalendarComponent: View {
                             .foregroundColor(Color.black)
                             .frame(maxWidth: .infinity, minHeight: 40)
                             .onTapGesture {
+                                print("Selected date: \(day)")
                                 selectedDate = day
                             }
                     }

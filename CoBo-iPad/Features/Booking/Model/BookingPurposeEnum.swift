@@ -20,8 +20,8 @@ enum BookingPurpose: Codable, Equatable {
         case .meeting:
             return "Meeting"
         case .others(let custom):
-            return custom
-        }
+                return custom.isEmpty ? "Others" : custom
+            }
     }
 
     enum CodingKeys: String, CodingKey {
@@ -64,5 +64,11 @@ enum BookingPurpose: Codable, Equatable {
 
     static var allPredefined: [BookingPurpose] {
         return [.groupDiscussion, .personalMentoring, .meeting]
+    }
+}
+
+extension BookingPurpose {
+    static var allValues: [BookingPurpose] {
+        return [.groupDiscussion, .personalMentoring, .meeting, .others("")]
     }
 }

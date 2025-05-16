@@ -28,9 +28,7 @@ class User: DropdownProtocol{
     }
     
     var dropdownLabel: String {
-        get {
-            return self.name
-        }
+        return "\(name) - \(email)"
     }
     
     var value: Any {

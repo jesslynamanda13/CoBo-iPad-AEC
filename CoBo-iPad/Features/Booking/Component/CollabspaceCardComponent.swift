@@ -8,9 +8,14 @@
 import SwiftUI
 struct CollabspaceCard : View{
     @EnvironmentObject var databaseVM: DataViewModel
-    @Binding var selectedDate: Date
+    let collabSpaceVM: CollabSpaceViewModel
     let collabSpace: CollabSpace
+    @Binding var selectedCollabSpace : CollabSpace?
+    @Binding var selectedTimeslot : Timeslot?
+    @Binding var selectedDate : Date
+    @State private var timeslotVM: TimeslotViewModel? = nil
     let screenWidth = UIScreen.main.bounds.width
+    
     var body: some View {
         VStack(){
             HStack(alignment: .center){
@@ -76,7 +81,7 @@ struct CollabspaceCard : View{
                                         
                                     }
                                 }
-                               
+                                
                                 
                             }
                             
@@ -111,74 +116,18 @@ struct CollabspaceCard : View{
                 }
                 .padding(.horizontal)
                 .padding(.bottom, 8)
-                TimeslotManager(databaseVM: _databaseVM, selectedDate: $selectedDate, selectedCollabSpace: collabSpace).environmentObject(databaseVM)
-              
-//                VStack(spacing: 12){
-//                    HStack{
-//                        Text("09.00 - 10.00")
-//                            .fontWeight(.regular)
-//                            .font(.system(size: 15))
-//                            .padding(.vertical, 12)
-//                            .padding(.horizontal)
-//                            .background(
-//                                RoundedRectangle(cornerRadius: 8)
-//                                    .stroke(Color.gray.opacity(0.4), lineWidth: 0.5)
-//                            )
-//                        
-//                        Text("09.00 - 10.00")
-//                            .fontWeight(.regular)
-//                            .font(.system(size: 15))
-//                            .padding(.vertical, 12)
-//                            .padding(.horizontal)
-//                            .background(
-//                                RoundedRectangle(cornerRadius: 8)
-//                                    .stroke(Color.gray.opacity(0.4), lineWidth: 0.5)
-//                            )
-//                        Text("09.00 - 10.00")
-//                            .fontWeight(.regular)
-//                            .font(.system(size: 15))
-//                            .padding(.vertical, 12)
-//                            .padding(.horizontal)
-//                            .background(
-//                                RoundedRectangle(cornerRadius: 8)
-//                                    .stroke(Color.gray.opacity(0.4), lineWidth: 0.5)
-//                            )
-//                        
-//                    }
-//                    HStack{
-//                        Text("09.00 - 10.00")
-//                            .fontWeight(.regular)
-//                            .font(.system(size: 15))
-//                            .padding(.vertical, 12)
-//                            .padding(.horizontal)
-//                            .background(
-//                                RoundedRectangle(cornerRadius: 8)
-//                                    .stroke(Color.gray.opacity(0.4), lineWidth: 0.5)
-//                            )
-//                        Text("09.00 - 10.00")
-//                            .fontWeight(.regular)
-//                            .font(.system(size: 15))
-//                            .padding(.vertical, 12)
-//                            .padding(.horizontal)
-//                            .background(
-//                                RoundedRectangle(cornerRadius: 8)
-//                                    .stroke(Color.gray.opacity(0.4), lineWidth: 0.5)
-//                            )
-//                        Text("09.00 - 10.00")
-//                            .fontWeight(.regular)
-//                            .font(.system(size: 15))
-//                            .padding(.vertical, 12)
-//                            .padding(.horizontal)
-//                            .background(
-//                                RoundedRectangle(cornerRadius: 8)
-//                                    .stroke(Color.gray.opacity(0.4), lineWidth: 0.5)
-//                            )
-//                        
-//                    }
-//                }
+                if let timeslotVM = timeslotVM {
+                    TimeslotManager(
+                        timeslotVM: timeslotVM,
+                        collabSpace: collabSpace,
+                        selectedCollabSpace: $selectedCollabSpace,
+                        selectedTimeslot: $selectedTimeslot
+                    )
+                }
+
             }
             .padding(.horizontal)
-            .padding(.top, 12)
+            .padding(.top, 8)
             .padding(.bottom, 24)
         }
         .frame(maxWidth: .infinity)
@@ -189,9 +138,17 @@ struct CollabspaceCard : View{
             RoundedRectangle(cornerRadius: 12)
                 .stroke(Color.gray.opacity(0.4), lineWidth: 1)
         )
+        .onChange(of: selectedDate) { newDate in
+            timeslotVM = collabSpaceVM.getTimeslotVM(for: collabSpace, database: databaseVM.database)
+        }
+        .onAppear {
+            timeslotVM = collabSpaceVM.getTimeslotVM(for: collabSpace, database: databaseVM.database)
+        }
     }
 }
 
+
+// TODO: Pindahin
 struct TopLeftRoundedShape: Shape {
     func path(in rect: CGRect) -> Path {
         let radius: CGFloat = 12

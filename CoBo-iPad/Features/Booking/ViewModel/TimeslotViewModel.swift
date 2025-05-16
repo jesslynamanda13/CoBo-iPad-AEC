@@ -8,7 +8,7 @@
 import CloudKit
 import Foundation
 import SwiftUI
-
+import Combine
 enum TimeslotManagerState{
     case loading
     case loaded([Timeslot], [Timeslot:Bool])
@@ -17,41 +17,54 @@ enum TimeslotManagerState{
 
 
 class TimeslotViewModel : ObservableObject {
+    private var cancellables = Set<AnyCancellable>()
+    
+    @Published var id = UUID()
     @Published private(set) var managerState: TimeslotManagerState = .loading
     @Published var timeSlotAvailable: [Timeslot: Bool] = [:]
     @Published var allTimeslot: [Timeslot] = []
+    @Published var displayedTimeslots: [DisplayedTimeslot] = []
+    private var database: CKDatabase
+    private var selectedCollabSpace:CollabSpace
     
-    private var database: CKDatabase?
-    private var selectedCollabSpace:CollabSpace?
-    private var selectedDate:Date?
+    @Published var selectedDate:Date
     
-    init(){}
+    init(selectedCollabSpace: CollabSpace, database: CKDatabase, selectedDatePublisher: Published<Date>.Publisher) {
+            self.selectedCollabSpace = selectedCollabSpace
+            self.database = database
+            self.selectedDate = Date()
+
+            selectedDatePublisher
+                .receive(on: DispatchQueue.main)
+                .sink { [weak self] newDate in
+                    guard let self = self else { return }
+                    self.selectedDate = newDate
+                    self.fetchTimeSlot()
+                }
+                .store(in: &cancellables)
+        }
     
-    static func stub() -> TimeslotViewModel {
-        TimeslotViewModel()
-    }
-    
-    
-    func configure(
-        database: CKDatabase,
-        selectedDate: Date,
-        selectedCollabSpace: CollabSpace
-    ) {
-        self.database = database
-        self.selectedDate = selectedDate
-        self.selectedCollabSpace = selectedCollabSpace
-    }
+//    init(
+//         selectedCollabSpace: CollabSpace,
+//         database: CKDatabase,
+//         selectedDate: Binding<Date>
+//    ) {
+//        self.id = UUID()
+//        self.selectedCollabSpace = selectedCollabSpace
+//        self.database = database
+//        self.selectedDate = selectedDate
+//    }
     
     public func fetchTimeSlot(){
-        // fetch all timeslot data
+        self.updateState(.loading)
+        print("Fetch timeslot")
         let query = CKQuery(recordType: "TimeslotRecords", predicate: NSPredicate(value: true))
-        database!.perform(query, inZoneWith: nil) { results, error in
+        database.perform(query, inZoneWith: nil) { results, error in
             guard let records = results else { return }
             do{
                 DispatchQueue.main.async {
                     let timeslots = records.compactMap { record -> Timeslot? in
                         guard
-                            
                             let startHour = record["startHour"] as? Double,
                             let endHour = record["endHour"] as? Double
                                 
@@ -64,64 +77,90 @@ class TimeslotViewModel : ObservableObject {
                     }
                     
                     self.allTimeslot = self.sortTimeslot(timeslots: timeslots)
-                    self.computeTimeSlotAvailability(timeslots: self.allTimeslot)
+                    self.computeTimeSlotAvailability(timeslots: self.allTimeslot) { availability in
+                        self.timeSlotAvailable = availability
+                        self.updateState(.loaded(self.allTimeslot, self.timeSlotAvailable))
+                        print("State updated")
+                    }
                     
-                    // testing first!
-                    self.updateState(.loaded(self.allTimeslot, self.timeSlotAvailable))
-                    // for each time slot, find in booking records if there is a booking with the selected date, collabspace, and timeslot
-                    
+                    self.displayedTimeslots = timeslots.map { ts in
+                        DisplayedTimeslot(
+                            timeslot: ts,
+                            isAvailable: self.timeSlotAvailable[ts] ?? false
+                        )
+                    }
                 }
             }
         }
         
     }
-    private func computeTimeSlotAvailability(timeslots: [Timeslot]){
+    
+    private func fetchCollabSpaceRecord(record: CollabSpace, completion: @escaping (CKRecord?) -> Void) {
+        let recordID = CKRecord.ID(recordName: record.id)
+        database.fetch(withRecordID: recordID) { fetchedRecord, error in
+            if let error = error {
+                completion(nil)
+            } else if let fetchedRecord = fetchedRecord, fetchedRecord.recordType == "CollabSpaceRecords" {
+                completion(fetchedRecord)
+            } else {
+                completion(nil)
+            }
+        }
+    }
+    
+    
+    
+    private func computeTimeSlotAvailability(
+        timeslots: [Timeslot],
+        completion: @escaping ([Timeslot: Bool]) -> Void
+    ) {
         let now = Date()
         let calendar = Calendar.current
         let currentHour = Double(calendar.component(.hour, from: now))
         let currentMinute = Double(calendar.component(.minute, from: now))
         let currentTimeAsDouble = currentHour + (currentMinute / 60.0)
         
-        for timeslot in timeslots {
-            let isAvailable = timeslot.endHour > currentTimeAsDouble
-            self.timeSlotAvailable[timeslot] = isAvailable
-        }
+        let startOfDay = calendar.startOfDay(for: selectedDate)
+        guard let endOfDay = calendar.date(byAdding: .day, value: 1, to: startOfDay) else { return }
         
-        // test with space and time
-        // search for booking records
+        fetchCollabSpaceRecord(record: selectedCollabSpace) { collabSpaceRecord in
+            guard let collabSpaceRecord = collabSpaceRecord else {
+                return
+            }
+            
+            let reference = CKRecord.Reference(record: collabSpaceRecord, action: .none)
+            let predicate = NSPredicate(
+                format: "CollabSpaceRecordID == %@ AND Date >= %@ AND Date < %@",
+                reference,
+                startOfDay as CVarArg,
+                endOfDay as CVarArg
+            )
+            
+            print("Fetch for availability at ", self.selectedDate, self.selectedCollabSpace.name)
+            let query = CKQuery(recordType: "BookingRecords", predicate: predicate)
+            self.database.perform(query, inZoneWith: nil) { records, error in
+                DispatchQueue.main.async {
+                    if let error = error {
+                        print("CloudKit query error: \(error.localizedDescription)")
+                        return
+                    }
+                    
+                    let bookedTimeslotIDs: Set<String> = Set(records?.compactMap {
+                        ($0["TimeSlotID"] as? CKRecord.Reference)?.recordID.recordName
+                    } ?? [])
+                    
+                    var availability: [Timeslot: Bool] = [:]
+                    for timeslot in timeslots {
+                        let isAfterNow = timeslot.endHour > currentTimeAsDouble
+                        let isBooked = bookedTimeslotIDs.contains(timeslot.recordName)
+                        availability[timeslot] = isAfterNow && !isBooked
+                    }
+                    completion(availability)
+                }
+            }
+            
+        }
     }
-    //
-    //    private func searchForBookingRecords(timeslot: Timeslot, collabSpace: CollabSpace, date: Date, completion: @escaping (Bool) -> Void) {
-    //        let timeslotRef = CKRecord.Reference(recordID: CKRecord.ID(recordName: timeslot.id.uuidString), action: .none)
-    //        let collabSpaceRef = CKRecord.Reference(recordID: CKRecord.ID(recordName: collabSpace.id.uuidString), action: .none)
-    //
-    //        let startOfDay = Calendar.current.startOfDay(for: date)
-    //        let endOfDay = Calendar.current.date(byAdding: .day, value: 1, to: startOfDay)!
-    //
-    //        let datePredicate = NSPredicate(format: "date >= %@ AND date < %@", startOfDay as CVarArg, endOfDay as CVarArg)
-    //        let timeslotPredicate = NSPredicate(format: "timeslot == %@", timeslotRef)
-    //        let collabSpacePredicate = NSPredicate(format: "collabSpace == %@", collabSpaceRef)
-    //
-    //        let predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [timeslotPredicate, collabSpacePredicate, datePredicate])
-    //
-    //        let query = CKQuery(recordType: "BookingRecord", predicate: predicate)
-    //
-    //        database.perform(query, inZoneWith: nil) { records, error in
-    //            if let error = error {
-    //                print("Booking fetch error: \(error.localizedDescription)")
-    //                DispatchQueue.main.async {
-    //                    completion(false)
-    //                }
-    //                return
-    //            }
-    //
-    //            let hasBooking = (records?.isEmpty == false)
-    //            DispatchQueue.main.async {
-    //                completion(!hasBooking)
-    //            }
-    //        }
-    //    }
-    //
     
     private func sortTimeslot(timeslots:[Timeslot]) -> [Timeslot]{
         let sortedTimeslots = timeslots.sorted { $0.startHour < $1.startHour }
@@ -137,3 +176,9 @@ extension TimeslotViewModel{
     }
 }
 
+
+struct DisplayedTimeslot: Identifiable, Hashable {
+    let id = UUID()
+    let timeslot: Timeslot
+    let isAvailable: Bool
+}

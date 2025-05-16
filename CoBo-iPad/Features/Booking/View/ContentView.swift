@@ -10,15 +10,19 @@ import SwiftData
 
 struct ContentView: View {
     @Environment(\.modelContext) var modelContext
-    @EnvironmentObject var databaseVM : DataViewModel
+    @EnvironmentObject var dataViewModel: DataViewModel
+    
     var body: some View {
         TabView {
-            BookSpaceView()
-                .environmentObject(databaseVM)
-                .tabItem {
-                    Label("Book Space", systemImage: "calendar.badge.plus")
-                }
+         
+                BookSpaceView(bookSpaceViewModel: BookSpaceViewModel(), collabSpaceViewModel: CollabSpaceViewModel(selectedDate: Date(), database: dataViewModel.database),
+                              userViewModel: UserViewModel(database: dataViewModel.database))
+                    .tabItem {
+                        Label("Book Space", systemImage: "calendar.badge.plus")
+                    }
 
+            
+            
             CheckInView()
                 .tabItem {
                     Label("Check-In", systemImage: "person.crop.circle.badge.checkmark")

@@ -7,6 +7,7 @@
 
 import CloudKit
 import Foundation
+import SwiftUI
 
 enum CollabspaceManagerState{
     case loading
@@ -14,18 +15,24 @@ enum CollabspaceManagerState{
     case error(NetworkError)
 }
 
+
 class CollabSpaceViewModel : ObservableObject {
+    @Published var selectedDate: Date
     private let database: CKDatabase
+    var timeslotVMs: [String: TimeslotViewModel] = [:]
     
     @Published private(set) var managerState: CollabspaceManagerState = .loading
     @Published var collabSpaces: [CollabSpace] = []
     
-    init(database: CKDatabase) {
+    init(selectedDate: Date, database: CKDatabase) {
+        self.selectedDate = selectedDate
         self.database = database
     }
     
     func fetchCollabRecords() {
+        print("[CS VM fetch records] Date: ", selectedDate)
         let query = CKQuery(recordType: "CollabSpaceRecords", predicate: NSPredicate(value: true))
+        print("about to fetch")
         database.perform(query, inZoneWith: nil) { results, error in
             if error != nil {
                 self.updateState(.error(.unknown))
@@ -35,6 +42,7 @@ class CollabSpaceViewModel : ObservableObject {
             guard let records = results else { return }
             do{
                 DispatchQueue.main.async {
+                    print("Fetching collab records")
                     let spaces = records.compactMap { record -> CollabSpace? in
                         guard
                             let name = record["Name"] as? String,
@@ -64,12 +72,48 @@ class CollabSpaceViewModel : ObservableObject {
                     self.collabSpaces = spaces
                     print("Fetched records from iCloud.")
                     self.updateState(.loaded(self.collabSpaces))
+                    print("[fetch collab records] State updated")
                 }
             }
             
         }
     }
     
+    func getTimeslotVM(for space: CollabSpace, database: CKDatabase) -> TimeslotViewModel {
+        print(">>> getTimeslotVM")
+        if let existingVM = timeslotVMs[space.recordName] {
+            return existingVM
+        }
+
+        let newVM = TimeslotViewModel(
+            selectedCollabSpace: space,
+            database: database,
+            selectedDatePublisher: $selectedDate
+        )
+        timeslotVMs[space.recordName] = newVM
+        return newVM
+    }
+
+    
+//    func getTimeslotVM(for space: CollabSpace, database: CKDatabase) -> TimeslotViewModel {
+//        print(">>> getTimeslotVM")
+//        if let existingVM = timeslotVMs[space.recordName] {
+//            if existingVM.selectedDate != selectedDate {
+//                // correct
+//                print("[getTimeslotVM] Date changed, recreating VM for \(space.name), \(selectedDate)")
+//                let newVM = TimeslotViewModel(selectedCollabSpace: space, database: database, selectedDate: $selectedDate)
+//                timeslotVMs[space.recordName] = newVM
+//                print("Check on VM date", newVM.selectedDate)
+//                return newVM
+//            }
+//            return existingVM
+//        }
+//
+//        let newVM = TimeslotViewModel(selectedCollabSpace: space, database: database, selectedDate:  $selectedDate)
+//        timeslotVMs[space.recordName] = newVM
+//        return newVM
+//    }
+
 }
 
 extension CollabSpaceViewModel{

@@ -24,7 +24,7 @@ struct ImageCarouselComponent: View {
                         Image(uiImage: uiImage)
                             .resizable()
                             .scaledToFill()
-                            .frame(maxWidth: screenWidth * 0.3, maxHeight: screenWidth * 0.15)
+                            .frame(maxWidth: screenWidth * 0.3, maxHeight: screenWidth * 0.1)
                             .clipped()
                             .clipShape(TopLeftRoundedShape())
                             .tag(index)
@@ -42,7 +42,7 @@ struct ImageCarouselComponent: View {
             }
         }
         .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
-        .frame(height: screenWidth * 0.15)
+        .frame(height: screenWidth * 0.1)
     }
 }
 
