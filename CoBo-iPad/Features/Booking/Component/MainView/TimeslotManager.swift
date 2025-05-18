@@ -31,8 +31,8 @@ struct TimeslotManager : View{
                     ForEach(timeslots, id: \.self) { timeslot in
                         TimeslotComponent(
                             timeslot: timeslot,
-                            isAvailable: true,
-//                            isAvailable: timeSlotsAvailability[timeslot] ?? false,
+//                            isAvailable: true,
+                            isAvailable: timeSlotsAvailability[timeslot] ?? false,
                             isSelected: selectedTimeslot == timeslot,
                             collabSpace: collabSpace,
                             selectedCollabSpace: selectedCollabSpace
@@ -41,9 +41,12 @@ struct TimeslotManager : View{
                                 selectedTimeslot = nil
                                 selectedCollabSpace = nil
                             }
-                            selectedTimeslot = timeslot
-                            selectedCollabSpace = collabSpace
-                            
+                            let availability = timeSlotsAvailability[timeslot] ?? false
+                            if availability{
+                                selectedTimeslot = timeslot
+                                selectedCollabSpace = collabSpace
+                            }
+                    
                         }
                     }
                 }

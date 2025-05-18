@@ -5,7 +5,7 @@
 //  Created by Amanda on 05/05/25.
 //
 
-enum BookingPurpose: Codable, Equatable {
+enum BookingPurpose: Codable, Equatable, Hashable{
     case groupDiscussion
     case personalMentoring
     case meeting

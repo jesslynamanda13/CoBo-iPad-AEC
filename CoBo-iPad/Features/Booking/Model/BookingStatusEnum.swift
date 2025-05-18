@@ -8,7 +8,7 @@
 
 import Foundation
 
-enum BookingStatus: String, Codable, Equatable, CaseIterable, Identifiable{
+enum BookingStatus: String, Codable, Equatable, CaseIterable, Identifiable, Hashable{
     case checkedIn = "Checked In"
     case notCheckedIn = "Not Checked In"
     case closed = "Closed"

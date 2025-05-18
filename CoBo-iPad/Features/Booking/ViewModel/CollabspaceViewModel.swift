@@ -30,9 +30,8 @@ class CollabSpaceViewModel : ObservableObject {
     }
     
     func fetchCollabRecords() {
-        print("[CS VM fetch records] Date: ", selectedDate)
+        
         let query = CKQuery(recordType: "CollabSpaceRecords", predicate: NSPredicate(value: true))
-        print("about to fetch")
         database.perform(query, inZoneWith: nil) { results, error in
             if error != nil {
                 self.updateState(.error(.unknown))
@@ -42,12 +41,12 @@ class CollabSpaceViewModel : ObservableObject {
             guard let records = results else { return }
             do{
                 DispatchQueue.main.async {
-                    print("Fetching collab records")
                     let spaces = records.compactMap { record -> CollabSpace? in
                         guard
                             let name = record["Name"] as? String,
                             let capacity = record["Capacity"] as? Int,
                             let images = record["SpaceImages"] as? [CKAsset],
+                            let locationImage = record["LocationImage"] as? CKAsset,
                             let whiteboard = record["WhiteboardAmount"] as? Int,
                             let tableWhiteboard = record["TableWhiteboardAmount"] as? Int,
                             let tvInt = record["TVAvailable"] as? Int
@@ -56,11 +55,13 @@ class CollabSpaceViewModel : ObservableObject {
                         }
                         let recordName = record.recordID.recordName
                         let imageURLs: [URL] = images.compactMap { $0.fileURL }
+                        let locationImageURL = locationImage.fileURL
                         
                         let space = CollabSpace(
                             recordName: recordName,
                             name: name,
                             images: imageURLs,
+                            locationImage: locationImageURL,
                             capacity: capacity,
                             whiteboardAmount: whiteboard,
                             tableWhiteboardAmount: tableWhiteboard,
@@ -69,18 +70,29 @@ class CollabSpaceViewModel : ObservableObject {
                         
                         return space
                     }
-                    self.collabSpaces = spaces
-                    print("Fetched records from iCloud.")
+                    self.collabSpaces = spaces.sorted {
+                        self.extractNumber(from: $0.name) < self.extractNumber(from: $1.name)
+                    }
+
+    
+
                     self.updateState(.loaded(self.collabSpaces))
-                    print("[fetch collab records] State updated")
                 }
             }
             
         }
     }
     
+    func extractNumber(from name: String) -> Int {
+        let pattern = "\\d+"
+        if let match = name.range(of: pattern, options: .regularExpression),
+           let number = Int(name[match]) {
+            return number
+        }
+        return 0
+    }
+    
     func getTimeslotVM(for space: CollabSpace, database: CKDatabase) -> TimeslotViewModel {
-        print(">>> getTimeslotVM")
         if let existingVM = timeslotVMs[space.recordName] {
             return existingVM
         }
@@ -94,25 +106,6 @@ class CollabSpaceViewModel : ObservableObject {
         return newVM
     }
 
-    
-//    func getTimeslotVM(for space: CollabSpace, database: CKDatabase) -> TimeslotViewModel {
-//        print(">>> getTimeslotVM")
-//        if let existingVM = timeslotVMs[space.recordName] {
-//            if existingVM.selectedDate != selectedDate {
-//                // correct
-//                print("[getTimeslotVM] Date changed, recreating VM for \(space.name), \(selectedDate)")
-//                let newVM = TimeslotViewModel(selectedCollabSpace: space, database: database, selectedDate: $selectedDate)
-//                timeslotVMs[space.recordName] = newVM
-//                print("Check on VM date", newVM.selectedDate)
-//                return newVM
-//            }
-//            return existingVM
-//        }
-//
-//        let newVM = TimeslotViewModel(selectedCollabSpace: space, database: database, selectedDate:  $selectedDate)
-//        timeslotVMs[space.recordName] = newVM
-//        return newVM
-//    }
 
 }
 

@@ -8,6 +8,7 @@
 import Foundation
 import SwiftData
 
+
 struct Timeslot: Hashable, Identifiable, Codable
 {
    

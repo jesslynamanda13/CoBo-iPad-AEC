@@ -40,6 +40,7 @@ struct CollabSpaceManager: View {
                         }
                     }
                     .padding(24)
+                    .padding(.bottom, 80)
                     .frame(maxWidth: .infinity)
                 }
                 

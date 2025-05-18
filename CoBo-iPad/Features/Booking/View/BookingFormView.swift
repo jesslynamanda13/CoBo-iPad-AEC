@@ -15,14 +15,14 @@ struct BookingFormView: View {
     @State private var step = 1
     @StateObject var userVM : UserViewModel
     @State private var selectedUser: User? = nil
-    @State private var navigateToSummary = false
     @FocusState private var isMeetingNameFocused: Bool
     
     @State var meetingName: String = ""
     @State private var selectedPurpose: BookingPurpose? = nil
     @State private var selectedParticipants: [User] = []
+    @State var navigateToSummary: Bool = false
+//    @Binding var navigationPath: NavigationPath
     
-    // Toast
     @State private var showToast = false
     @State private var toastMessage = ""
 
@@ -167,14 +167,14 @@ struct BookingFormView: View {
                                     .cornerRadius(12)
                                 
                             }
-                            NavigationLink(destination: bookingSummaryDestination, isActive: $navigateToSummary) {
-                                EmptyView()
-                            }
-                            .hidden()
 
                         }
                         .padding()
                         .background(Color.white)
+                        NavigationLink(destination: bookingSummaryDestination, isActive: $navigateToSummary) {
+                                                       EmptyView()
+                                                   }
+                                                   .hidden()
                        
                     },
                     
@@ -224,11 +224,7 @@ struct BookingFormView: View {
         
     }
     
-    func formatDate(_ date: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "EEEE, d MMMM yyyy"
-        return formatter.string(from: date)
-    }
+    
     
     @ViewBuilder
     private var bookingSummaryDestination: some View {
@@ -248,7 +244,10 @@ struct BookingFormView: View {
         }
     }
 
+}
 
-
-    
+public func formatDate(_ date: Date) -> String {
+    let formatter = DateFormatter()
+    formatter.dateFormat = "EEEE, d MMMM yyyy"
+    return formatter.string(from: date)
 }

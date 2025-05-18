@@ -15,9 +15,11 @@ struct BookingSummaryView: View {
     var meetingName: String
     var purpose: BookingPurpose
     var participants: [User]
-    
+    @State private var booking: Booking?
+    @State private var navigateToSuccess = false
     @State private var step = 2
     @EnvironmentObject var databaseVM : DataViewModel
+    
     
     let darkerGrayColor = Color(red: 200/255, green: 200/255, blue: 200/255)
     
@@ -108,7 +110,7 @@ struct BookingSummaryView: View {
                     ThreeStepProgressBar(currentStep: step)
                     Button(
                         action:{
-                            let booking : Booking = Booking(
+                            booking = Booking(
                                 meetingName: meetingName,
                                 coordinator: coordinator,
                                 purpose: purpose,
@@ -117,7 +119,11 @@ struct BookingSummaryView: View {
                                 timeslot: selectedTimeslot,
                                 collabSpace: selectedCollabSpace
                             )
-                            insertBooking(booking: booking)
+                            if let booking = booking {
+                                insertBooking(booking: booking);
+                                navigateToSuccess = true
+                            }
+                            
                         }
                     ){
                         Text("Confirm")
@@ -129,9 +135,14 @@ struct BookingSummaryView: View {
                             .cornerRadius(12)
                         
                     }
+                    NavigationLink(destination: bookingSuccessDestination, isActive: $navigateToSuccess) {
+                        EmptyView()
+                    }
+                    .hidden()
                 }
                 .padding()
                 .background(Color.white)
+                
             },
             alignment: .bottom
         )
@@ -156,5 +167,14 @@ struct BookingSummaryView: View {
         let formatter = DateFormatter()
         formatter.dateFormat = "EEEE, d MMMM yyyy"
         return formatter.string(from: date)
+    }
+    
+    @ViewBuilder
+    private var bookingSuccessDestination : some View {
+        if let booking = booking{
+            BookingSuccessView(booking: booking)
+        }else{
+            EmptyView()
+        }
     }
 }

@@ -7,30 +7,30 @@
 import SwiftUI
 
 struct PopupComponent : View{
-    @Binding var selectedDate : Date
-    @Binding var selectedCollabSpace : CollabSpace
-    @Binding var selectedTimeslot : Timeslot
+    var selectedDate : Date
+    var selectedCollabSpace : CollabSpace
+    var selectedTimeslot : Timeslot
     var onBookNow: () -> Void
     @State private var navigateToForm = false
     var body : some View{
             VStack{
                 HStack{
                     VStack(alignment: .leading, spacing: 16){
-                        Text("Book Space").font(.title3).fontWeight(.bold)
+                        Text("Book Collab Space").font(.title2).fontWeight(.bold)
                         HStack(spacing: 12){
                             HStack{
-                                Image(systemName: "calendar").font(.subheadline)
-                                Text("\(formattedDate(selectedDate))").font(.subheadline)
+                                Image(systemName: "calendar").font(.body)
+                                Text("\(formattedDate(selectedDate))").font(.body)
                             }
                             Divider().frame(height: 20)
                             HStack{
-                                Image(systemName: "clock").font(.subheadline)
-                                Text("\(selectedTimeslot.doubleToTime(selectedTimeslot.startHour)) - \(selectedTimeslot.doubleToTime(selectedTimeslot.endHour))").font(.subheadline)
+                                Image(systemName: "clock").font(.body)
+                                Text("\(selectedTimeslot.doubleToTime(selectedTimeslot.startHour)) - \(selectedTimeslot.doubleToTime(selectedTimeslot.endHour))").font(.body)
                             }
                             Divider().frame(height: 20)
                             HStack{
-                                Image(systemName: "house").font(.subheadline)
-                                Text("\(selectedCollabSpace.name)").font(.subheadline)
+                                Image(systemName: "house").font(.body)
+                                Text("\(selectedCollabSpace.name)").font(.body)
                             }
                             
                         }

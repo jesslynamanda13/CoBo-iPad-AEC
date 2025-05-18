@@ -22,9 +22,6 @@ class Booking: Hashable, Identifiable {
     var status: BookingStatus
     var checkInCode: String?
     
-    func getCalendarQRCode() -> Image? {
-        return nil
-    }
     
     func getStatus() -> String {
         switch status {
@@ -51,5 +48,6 @@ class Booking: Hashable, Identifiable {
         self.status = status
         self.checkInCode = checkInCode
     }
+    
     
 }

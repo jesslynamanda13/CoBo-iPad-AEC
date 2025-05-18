@@ -19,7 +19,7 @@ struct CollabspaceCard : View{
     var body: some View {
         VStack(){
             HStack(alignment: .center){
-                ImageCarouselComponent(images: collabSpace.images)
+                ImageCarouselComponent(images: collabSpace.images, locationUIImage: collabSpace.locationUIImage!, collabSpaceName: collabSpace.name)
                 VStack(alignment: .leading, spacing: 12){
                     Text("\(collabSpace.name)")
                         .fontWeight(.bold)

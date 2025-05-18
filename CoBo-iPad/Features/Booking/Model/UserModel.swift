@@ -7,12 +7,15 @@
 
 import Foundation
 import SwiftData
-
-@Model
-class User: DropdownProtocol{
+struct User: DropdownProtocol, Hashable, Identifiable, Codable{
+   
+    @Attribute(.unique) var recordName: String
     var name: String
     var role: UserRole
     var email: String
+    
+    
+    var id: String { recordName }
     
     func getRole() -> String {
         switch role {
@@ -28,7 +31,7 @@ class User: DropdownProtocol{
     }
     
     var dropdownLabel: String {
-        return "\(name) - \(email)"
+        return "\(name)"
     }
     
     var value: Any {
@@ -37,9 +40,18 @@ class User: DropdownProtocol{
         }
     }
     
-    init(name: String, role: UserRole, email: String) {
+    init(recordName:String, name: String, role: UserRole, email: String) {
+        self.recordName = recordName
         self.name = name
         self.role = role
         self.email = email
+    }
+    
+    static func == (lhs: User, rhs: User) -> Bool {
+        lhs.id == rhs.id
+    }
+    
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
     }
 }

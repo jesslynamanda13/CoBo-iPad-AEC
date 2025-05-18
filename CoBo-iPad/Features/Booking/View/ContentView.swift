@@ -7,38 +7,18 @@
 
 import SwiftUI
 import SwiftData
-
 struct ContentView: View {
     @Environment(\.modelContext) var modelContext
     @EnvironmentObject var dataViewModel: DataViewModel
     
     var body: some View {
-        TabView {
-         
-                BookSpaceView(bookSpaceViewModel: BookSpaceViewModel(), collabSpaceViewModel: CollabSpaceViewModel(selectedDate: Date(), database: dataViewModel.database),
-                              userViewModel: UserViewModel(database: dataViewModel.database))
-                    .tabItem {
-                        Label("Book Space", systemImage: "calendar.badge.plus")
-                    }
+        BookSpaceView(bookSpaceViewModel: BookSpaceViewModel(), collabSpaceViewModel: CollabSpaceViewModel(selectedDate: Date(), database: dataViewModel.database),
+                      userViewModel: UserViewModel(database: dataViewModel.database))
+        .navigationBarBackButtonHidden(true)
 
-            
-            
-            CheckInView()
-                .tabItem {
-                    Label("Check-In", systemImage: "person.crop.circle.badge.checkmark")
-                }
-
-            BookingLogView()
-                .tabItem {
-                    Label("Booking Log", systemImage: "doc.text.magnifyingglass")
-                }
-        }
-        .accentColor(.purple)
-        .tabViewStyle(DefaultTabViewStyle())
     }
 }
 
 #Preview {
     ContentView()
 }
-

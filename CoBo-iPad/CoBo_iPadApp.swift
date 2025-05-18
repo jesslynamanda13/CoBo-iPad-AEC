@@ -15,7 +15,7 @@ struct CoBo_iPadApp: App {
     
     var body: some Scene {
         WindowGroup {
-            ContentView().environmentObject(databaseVM)
+            IntroductionView().environmentObject(databaseVM)
         }
     }
 }

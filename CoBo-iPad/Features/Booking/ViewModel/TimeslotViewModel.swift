@@ -57,7 +57,6 @@ class TimeslotViewModel : ObservableObject {
     
     public func fetchTimeSlot(){
         self.updateState(.loading)
-        print("Fetch timeslot")
         let query = CKQuery(recordType: "TimeslotRecords", predicate: NSPredicate(value: true))
         database.perform(query, inZoneWith: nil) { results, error in
             guard let records = results else { return }
@@ -80,7 +79,6 @@ class TimeslotViewModel : ObservableObject {
                     self.computeTimeSlotAvailability(timeslots: self.allTimeslot) { availability in
                         self.timeSlotAvailable = availability
                         self.updateState(.loaded(self.allTimeslot, self.timeSlotAvailable))
-                        print("State updated")
                     }
                     
                     self.displayedTimeslots = timeslots.map { ts in
@@ -114,8 +112,20 @@ class TimeslotViewModel : ObservableObject {
         timeslots: [Timeslot],
         completion: @escaping ([Timeslot: Bool]) -> Void
     ) {
-        let now = Date()
+        let now = selectedDate
         let calendar = Calendar.current
+        let weekday = calendar.component(.weekday, from: now)
+        let isWeekend = (weekday == 1 || weekday == 7)
+
+        if isWeekend {
+            var availability: [Timeslot: Bool] = [:]
+               for timeslot in timeslots {
+                   availability[timeslot] = false
+               }
+               completion(availability)
+            return
+        }
+        
         let currentHour = Double(calendar.component(.hour, from: now))
         let currentMinute = Double(calendar.component(.minute, from: now))
         let currentTimeAsDouble = currentHour + (currentMinute / 60.0)
@@ -136,7 +146,6 @@ class TimeslotViewModel : ObservableObject {
                 endOfDay as CVarArg
             )
             
-            print("Fetch for availability at ", self.selectedDate, self.selectedCollabSpace.name)
             let query = CKQuery(recordType: "BookingRecords", predicate: predicate)
             self.database.perform(query, inZoneWith: nil) { records, error in
                 DispatchQueue.main.async {

@@ -42,7 +42,7 @@ struct BookSpaceView: View {
                     CollabSpaceManager(
                         collabSpaceVM: collabSpaceViewModel,
                         selectedCollabSpace: $selectedCollabSpace,
-                        selectedTimeslot: $selectedTimeslot).frame(minHeight: 600)
+                        selectedTimeslot: $selectedTimeslot).frame(minHeight: 700)
                     
                 }
                 .safeAreaPadding(.all)
@@ -60,47 +60,40 @@ struct BookSpaceView: View {
             }
             .overlay(
                 Group {
-                    if let unwrappedCollabSpace = selectedCollabSpace,
-                       let unwrappedTimeslot = selectedTimeslot {
-                        VStack {
-                            PopupComponent(
-                                selectedDate: $bookSpaceViewModel.selectedDate,
-                                selectedCollabSpace: Binding<CollabSpace>(
-                                    get: { unwrappedCollabSpace },
-                                    set: { self.selectedCollabSpace = $0 }
-                                ),
-                                selectedTimeslot: Binding<Timeslot>(
-                                    get: { unwrappedTimeslot },
-                                    set: { self.selectedTimeslot = $0 }
-                                ),
-                                onBookNow: {
-                                    isNavigatingToBookingForm = true
-                                }
-                            )
-                            
-                            NavigationLink(
-                                destination:NavigationStack {BookingFormView(
-                                    selectedDate: bookSpaceViewModel.selectedDate,
-                                    selectedCollabSpace: unwrappedCollabSpace,
-                                    selectedTimeslot: unwrappedTimeslot,
-                                    userVM: userViewModel
-                                )
-                                },
-                                    
-                                isActive: $isNavigatingToBookingForm,
-                                label: { EmptyView() }
-                            )
-                            .hidden()
-                        }
-                    }
-                },
-                alignment: .bottom
+                                   if let unwrappedCollabSpace = selectedCollabSpace,
+                                      let unwrappedTimeslot = selectedTimeslot {
+                                       VStack {
+                                           PopupComponent(
+                                               selectedDate: bookSpaceViewModel.selectedDate,
+                                               selectedCollabSpace: unwrappedCollabSpace
+                                               ,
+                                           selectedTimeslot: unwrappedTimeslot,
+                                               onBookNow: {
+                                                   isNavigatingToBookingForm = true
+                                               }
+                                           )
+                                           
+                                           NavigationLink(
+                                               destination:NavigationStack {BookingFormView(
+                                                   selectedDate: bookSpaceViewModel.selectedDate,
+                                                   selectedCollabSpace: unwrappedCollabSpace,
+                                                   selectedTimeslot: unwrappedTimeslot,
+                                                   userVM: userViewModel
+                                               )
+                                               },
+                                                   
+                                               isActive: $isNavigatingToBookingForm,
+                                               label: { EmptyView() }
+                                           )
+                                           .hidden()
+                                       }
+                                   }
+                               },
+                               alignment: .bottom
             )
-            
-            
-        }
-        
-        
+        }.navigationBarBackButtonHidden(true)
     }
 }
+
+
 

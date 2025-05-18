@@ -92,7 +92,7 @@ extension Date{
             var date = self
             let calendar = Calendar.current
 
-            while weekdays.count < 7 {
+            while weekdays.count < 6 {
                 let weekday = calendar.component(.weekday, from: date)
                 if weekday != 1 && weekday != 7 { // Not Sunday (1) or Saturday (7)
                     weekdays.append(date)

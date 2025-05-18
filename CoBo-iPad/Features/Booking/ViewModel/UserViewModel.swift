@@ -15,7 +15,7 @@ enum UserLoadingState{
     case error(NetworkError)
 }
 
-class UserViewModel: ObservableObject {
+class UserViewModel: ObservableObject, Hashable {
     private let database : CKDatabase
     @Published var users: [User] = []
     @Published private(set) var managerState: UserLoadingState = .loading
@@ -34,6 +34,7 @@ class UserViewModel: ObservableObject {
                     print(records)
                     let usersFetched = records.compactMap { record -> User? in
                         guard
+                            let recordName = record.recordID.recordName as? String,
                             let name = record["Name"] as? String,
                             let email = record["Email"] as? String,
                             let roleString = record["Role"] as? String,
@@ -41,7 +42,7 @@ class UserViewModel: ObservableObject {
                         else {
                             return nil
                         }
-                        let user = User(name: name, role: role, email: email)
+                        let user = User(recordName: recordName, name: name, role: role, email: email)
                         print(user.name)
                         return user
                     }
@@ -54,6 +55,14 @@ class UserViewModel: ObservableObject {
             
         }
     }
+    static func == (lhs: UserViewModel, rhs: UserViewModel) -> Bool {
+            // Define equality logic, maybe based on a unique ID
+            return lhs === rhs // or customize
+        }
+
+        func hash(into hasher: inout Hasher) {
+            hasher.combine(ObjectIdentifier(self)) 
+        }
 }
 
 extension UserViewModel{

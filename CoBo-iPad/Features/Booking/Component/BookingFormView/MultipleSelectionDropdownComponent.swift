@@ -115,7 +115,7 @@ struct MultipleSelectionItemComponent<T: DropdownProtocol>: View {
     var body: some View {
         HStack(spacing: 4) {
             Text(item.dropdownLabel)
-                .font(.system(size: 14))
+                .font(.body)
                 .foregroundColor(.white)
             
             Button(action: onRemove) {
