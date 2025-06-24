@@ -120,7 +120,7 @@ class BookingController {
     }
     
     func fetchExistingCheckInCodes(completion: @escaping (Set<String>) -> Void) {
-        let predicate = NSPredicate(value: true) // Fetch all BookingRecords
+        let predicate = NSPredicate(value: true)
         let query = CKQuery(recordType: "BookingRecords", predicate: predicate)
         
         database.perform(query, inZoneWith: nil) { records, error in

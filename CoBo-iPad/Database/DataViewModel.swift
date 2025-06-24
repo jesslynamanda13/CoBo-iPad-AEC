@@ -8,7 +8,6 @@
 import CloudKit
 import SwiftUI
 
-// namain database manager
 class DataViewModel: ObservableObject {
     let container: CKContainer
     let database: CKDatabase

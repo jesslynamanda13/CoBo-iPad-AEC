@@ -15,7 +15,7 @@ struct TimeslotComponent : View{
         if !isAvailable{
             Text("\(timeslot.doubleToTime(timeslot.startHour)) - \(timeslot.doubleToTime(timeslot.endHour))")
                 .foregroundColor(.gray)
-                .fontWeight(.regular)
+                .fontWeight(.medium)
                 .font(.system(size: 15))
                 .padding(.vertical, 12)
                 .padding(.horizontal)
@@ -26,19 +26,23 @@ struct TimeslotComponent : View{
         }
         else if isSelected && collabSpace == selectedCollabSpace{
             Text("\(timeslot.doubleToTime(timeslot.startHour)) - \(timeslot.doubleToTime(timeslot.endHour))")
-                .fontWeight(.regular)
-                .foregroundStyle(.white)
+                .fontWeight(.medium)
+                .foregroundStyle(Color.purple)
                 .font(.system(size: 15))
                 .padding(.vertical, 12)
                 .padding(.horizontal)
                 .background(
-                    RoundedRectangle(cornerRadius: 8)
-                        .foregroundStyle(Color.purple)
-                )
+                        RoundedRectangle(cornerRadius: 8)
+                            .fill(Color("Light-Purple"))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .stroke(Color.purple, lineWidth: 1)
+                            )
+                    )
         }
         else{
             Text("\(timeslot.doubleToTime(timeslot.startHour)) - \(timeslot.doubleToTime(timeslot.endHour))")
-                .fontWeight(.regular)
+                .fontWeight(.medium)
                 .font(.system(size: 15))
                 .padding(.vertical, 12)
                 .padding(.horizontal)

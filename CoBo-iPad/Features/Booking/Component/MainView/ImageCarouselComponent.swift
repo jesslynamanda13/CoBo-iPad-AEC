@@ -58,7 +58,7 @@ struct ImageCarouselComponent: View {
                 }
                 .padding(8)
                 .background(Color.white)
-                .foregroundColor(.black)
+                .foregroundColor(Color.black)
                 .cornerRadius(8)
             }
             .padding([.top, .trailing], 8)
