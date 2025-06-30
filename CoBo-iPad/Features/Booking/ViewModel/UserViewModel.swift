@@ -56,8 +56,7 @@ class UserViewModel: ObservableObject, Hashable {
         }
     }
     static func == (lhs: UserViewModel, rhs: UserViewModel) -> Bool {
-            // Define equality logic, maybe based on a unique ID
-            return lhs === rhs // or customize
+            return lhs === rhs 
         }
 
         func hash(into hasher: inout Hasher) {

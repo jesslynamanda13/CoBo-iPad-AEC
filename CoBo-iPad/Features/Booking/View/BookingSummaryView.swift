@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct BookingSummaryView: View {
+    @Binding var path: [BookSpaceNavigation]
     var selectedDate: Date
     var selectedCollabSpace: CollabSpace
     var selectedTimeslot: Timeslot
@@ -16,7 +17,6 @@ struct BookingSummaryView: View {
     var purpose: BookingPurpose
     var participants: [User]
     @State private var booking: Booking?
-    @State private var navigateToSuccess = false
     @State private var step = 2
     @EnvironmentObject var databaseVM : DataViewModel
     
@@ -121,7 +121,7 @@ struct BookingSummaryView: View {
                             )
                             if let booking = booking {
                                 insertBooking(booking: booking);
-                                navigateToSuccess = true
+                                path.append(.bookingSuccess(booking))
                             }
                             
                         }
@@ -135,10 +135,7 @@ struct BookingSummaryView: View {
                             .cornerRadius(12)
                         
                     }
-                    NavigationLink(destination: bookingSuccessDestination, isActive: $navigateToSuccess) {
-                        EmptyView()
-                    }
-                    .hidden()
+                    
                 }
                 .padding()
                 .background(Color.white)
@@ -171,10 +168,11 @@ struct BookingSummaryView: View {
     
     @ViewBuilder
     private var bookingSuccessDestination : some View {
-        if let booking = booking{
-            BookingSuccessView(booking: booking)
-        }else{
+        if let booking = booking {
+            BookingSuccessView(path: $path, booking: booking)
+        } else {
             EmptyView()
         }
     }
+
 }

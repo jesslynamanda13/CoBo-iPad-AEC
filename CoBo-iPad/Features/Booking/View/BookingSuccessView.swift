@@ -9,9 +9,10 @@ import SwiftUI
 
 
 struct BookingSuccessView: View {
+    @Binding var path: [BookSpaceNavigation]
+
     var booking: Booking
     @State private var step = 3
-    @State private var goToBookSpace = false
     @EnvironmentObject var dataViewModel: DataViewModel
     @State private var showSummarySheet = false
 
@@ -86,7 +87,7 @@ struct BookingSuccessView: View {
 
 
                     Button(action: {
-                        goToBookSpace = true
+                        path.removeLast(path.count)
                     }) {
                         Text("Back to home")
                             .fontWeight(.bold)
@@ -97,16 +98,7 @@ struct BookingSuccessView: View {
                             .background(Color.purple)
                             .cornerRadius(12)
                     }
-                    NavigationLink(
-                        destination: BookSpaceView(
-                            bookSpaceViewModel: BookSpaceViewModel(),
-                            collabSpaceViewModel: CollabSpaceViewModel(selectedDate: Date(), database: dataViewModel.database),
-                            userViewModel: UserViewModel(database: dataViewModel.database)
-                        ),
-                        isActive: $goToBookSpace
-                    ) {
-                        EmptyView()
-                    }.hidden()
+                    
                 }
             }
             .padding()

@@ -1,24 +1,40 @@
-//
-//  ContentView.swift
-//  CoBo-iPad
-//
-//  Created by Amanda on 30/04/25.
-//
-
 import SwiftUI
 import SwiftData
+
 struct ContentView: View {
     @Environment(\.modelContext) var modelContext
     @EnvironmentObject var dataViewModel: DataViewModel
-    
-    var body: some View {
-        BookSpaceView(bookSpaceViewModel: BookSpaceViewModel(), collabSpaceViewModel: CollabSpaceViewModel(selectedDate: Date(), database: dataViewModel.database),
-                      userViewModel: UserViewModel(database: dataViewModel.database))
-        .navigationBarBackButtonHidden(true)
 
+    var body: some View {
+        TabView {
+            BookSpaceView(
+                bookSpaceViewModel: BookSpaceViewModel(),
+                collabSpaceViewModel: CollabSpaceViewModel(
+                    selectedDate: Date(),
+                    database: dataViewModel.database
+                ),
+                userViewModel: UserViewModel(database: dataViewModel.database)
+            )
+            .tabItem {
+                Label("Book Space", systemImage: "calendar.badge.plus")
+            }
+
+            BookingLogView(bookSpaceViewModel: BookSpaceViewModel(),
+                        collabSpaceViewModel: CollabSpaceViewModel(
+                            selectedDate: Date(),
+                            database: dataViewModel.database
+                        ),
+                        userViewModel: UserViewModel(database: dataViewModel.database))
+                .tabItem {
+                    Label("Booking Log", systemImage: "list.bullet.rectangle")
+                }
+        }
+        .navigationBarBackButtonHidden(true)
     }
 }
 
 #Preview {
     ContentView()
+        .environmentObject(DataViewModel())
 }
+

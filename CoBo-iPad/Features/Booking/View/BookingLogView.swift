@@ -8,7 +8,48 @@
 import SwiftUI
 
 struct BookingLogView:View{
+    let screenWidth = UIScreen.main.bounds.width
+    
+    @EnvironmentObject var dataViewModel: DataViewModel
+    @StateObject var bookSpaceViewModel: BookSpaceViewModel
+    @StateObject var collabSpaceViewModel: CollabSpaceViewModel
+    @StateObject var userViewModel: UserViewModel
+    
     var body: some View{
-        Text("Booking Log")
+        NavigationStack{
+            VStack {
+                ZStack{
+                    Image("bg-logs")
+                        .resizable()
+                        .frame(maxWidth: .infinity, maxHeight: 120)
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Booking Logs")
+                            .font(.title)
+                            .fontWeight(.bold)
+                        Text("Search and find booking logs here.")
+                            .font(.subheadline)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .safeAreaPadding(.all)
+                    .padding(.horizontal, 16)
+                }
+                HStack(alignment: .top, spacing: 32){
+                    CalendarComponent(selectedDate: $bookSpaceViewModel.selectedDate).frame(maxWidth: 350).padding(.top, 24)
+//                    CollabSpaceManager(
+//                        collabSpaceVM: collabSpaceViewModel,
+//                        selectedCollabSpace: $selectedCollabSpace,
+//                        selectedTimeslot: $selectedTimeslot).frame(minHeight: 700)
+                    
+                }
+                .safeAreaPadding(.all)
+                .padding(.horizontal, 16)
+            }
+            .frame(alignment: .top)
+            .onChange(of: bookSpaceViewModel.selectedDate) { newDate in
+                collabSpaceViewModel.selectedDate = newDate
+               
+            }
+            
+        }.navigationBarBackButtonHidden(true)
     }
 }

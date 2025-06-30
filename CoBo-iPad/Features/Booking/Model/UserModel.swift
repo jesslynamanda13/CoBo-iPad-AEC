@@ -34,6 +34,8 @@ struct User: DropdownProtocol, Hashable, Identifiable, Codable{
         return "\(name)"
     }
     
+   
+    
     var value: Any {
         get {
             return self

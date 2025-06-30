@@ -6,69 +6,64 @@
 //
 
 import SwiftUI
-
-struct MultipleSelectionDropdownComponent<T:DropdownProtocol>: View {
-    
+struct MultipleSelectionDropdownComponent<T: DropdownProtocol>: View {
     @Binding var selectedData: [T]
     let allData: [T]
     let itemColor: Color
-    
+    let rowContent: (T) -> AnyView
+
     @State var isDropdownExpanded = false
     @State var searchText: String = ""
+
     var filteredData: [T] {
         allData.filter { item in
-            guard !selectedData.contains(where: { $0.dropdownLabel == item.dropdownLabel }) else {
-                return false
-            }
-            
-            if searchText.isEmpty {
-                return true
-            }
-            
-            // searchText has content, so check if description contains the search text
-            return item.dropdownLabel.localizedCaseInsensitiveContains(searchText)
+            guard !selectedData.contains(where: { $0.dropdownLabel == item.dropdownLabel }) else { return false }
+            return searchText.isEmpty || item.dropdownLabel.localizedCaseInsensitiveContains(searchText)
         }
     }
-    
-    
-    init(selectedData: Binding<[T]>, allData: [T]) {
+
+    init(
+        selectedData: Binding<[T]>,
+        allData: [T],
+        rowContent: @escaping (T) -> AnyView
+    ) {
         self._selectedData = selectedData
         self.allData = allData
+        self.rowContent = rowContent
         self.itemColor = Color.purple
     }
-    
+
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             TagPlacer(spacing: 8) {
                 ForEach(selectedData) { data in
-                    MultipleSelectionItemComponent(item: data, color: itemColor){
+                    MultipleSelectionItemComponent(item: data, color: itemColor) {
                         if let index = selectedData.firstIndex(where: { $0.dropdownLabel == data.dropdownLabel }) {
                             selectedData.remove(at: index)
                         }
                     }
                 }
             }
+
             Button {
                 isDropdownExpanded.toggle()
                 searchText = ""
             } label: {
                 Text("+ Add Participant")
+                    .font(.system(.callout, weight: .medium))
+                    .foregroundColor(.white)
+                    .padding(.vertical, 10)
+                    .padding(.horizontal, 16)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(RoundedRectangle(cornerRadius: 8).fill(Color.purple))
             }
-            .font(.system (.callout, weight: .medium))
-            .foregroundColor(.white)
-                .padding(.vertical, 10)
-                .padding(.horizontal, 16)
-                .background(
-                    RoundedRectangle(cornerRadius: 8)
-                        .fill(Color.purple) // Light cream/yellow color
-                )
-                .frame(maxWidth: .infinity, alignment: .leading)
-            if (isDropdownExpanded) {
+
+            if isDropdownExpanded {
                 VStack {
                     TextField("Search...", text: $searchText)
                         .textFieldStyle(RoundedBorderTextFieldStyle())
                         .padding()
-                    
+
                     if filteredData.isEmpty {
                         Text("No results found")
                             .foregroundColor(.gray)
@@ -77,7 +72,7 @@ struct MultipleSelectionDropdownComponent<T:DropdownProtocol>: View {
                         ScrollView {
                             LazyVStack(spacing: 0) {
                                 ForEach(filteredData) { item in
-                                    Text(item.dropdownLabel)
+                                    rowContent(item)
                                         .frame(maxWidth: .infinity, alignment: .leading)
                                         .padding()
                                         .contentShape(Rectangle())
@@ -90,8 +85,6 @@ struct MultipleSelectionDropdownComponent<T:DropdownProtocol>: View {
                                     Divider()
                                 }
                             }
-        
-                            
                         }
                     }
                 }
@@ -99,13 +92,13 @@ struct MultipleSelectionDropdownComponent<T:DropdownProtocol>: View {
                 .background(Color.white)
                 .cornerRadius(8)
                 .shadow(radius: 5)
-//                .offset(y: 60)
                 .transition(.opacity)
                 .zIndex(9999)
             }
         }
     }
 }
+
 
 struct MultipleSelectionItemComponent<T: DropdownProtocol>: View {
     let item: T
@@ -187,5 +180,3 @@ struct TagPlacer: Layout {
         }
     }
 }
-
-

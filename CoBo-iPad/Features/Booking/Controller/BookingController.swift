@@ -16,7 +16,6 @@ class BookingController {
        }
     
     func insertBookingWithReferences(booking: Booking) {
-        
         let timeslotRecordName = booking.timeslot.recordName
         let collabSpaceRecordName = booking.collabSpace.recordName
         let coordinatorRecordName = booking.coordinator.recordName
