@@ -1,43 +1,55 @@
 //
-//  BookingSummarySheetComponent.swift
+//  BookingLogDetailView.swift
 //  CoBo-iPad
 //
-//  Created by Amanda on 17/05/25.
+//  Created by Amanda on 02/07/25.
 //
+
 import SwiftUI
 
-struct BookingSummarySheetComponent: View {
-    var booking: Booking
+struct BookingLogDetailView: View {
+    let booking: Booking
     @Environment(\.dismiss) private var dismiss
-    @State private var qrCodeImage: Image?
-    
+    @EnvironmentObject var databaseVM: DataViewModel
+    var onDismissRefresh: () -> Void
+
+    @State private var isShowingCancelModal = false
+
     var body: some View {
-        VStack(alignment: .center) {
-            HStack(alignment: .center) {
-                VStack(alignment: .leading, spacing: 32) {
-                    Text("Booking Summary")
-                        .font(.title2)
-                        .fontWeight(.bold)
+        ZStack {
+            NavigationStack {
+                ScrollView {
+                    VStack(spacing: 24) {
+                        bookingInfoSection
+                        cancelButton
+                    }
+                    .padding(32)
                 }
-                Spacer()
-                Button(action: {
-                    dismiss()
-                }) {
-                    Text("Done")
-                        .fontWeight(.regular)
-                        .foregroundColor(.white)
-                        .padding(.vertical, 8)
-                        .padding(.horizontal, 16)
-                        .background(.purple)
-                        .cornerRadius(10)
+                .navigationTitle(booking.meetingName)
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button("Done") { dismiss() }
+                    }
                 }
             }
-            
+
+            if isShowingCancelModal {
+                modalOverlay
+            }
+        }
+        .animation(.easeInOut, value: isShowingCancelModal)
+    }
+
+    // MARK: - Components
+
+    private var bookingInfoSection: some View {
+        Group {
             VStack(alignment: .leading, spacing: 24) {
                 HStack {
                     Text("Date").font(.body)
                     Spacer()
-                    Text(formatDate(booking.date)).font(.body).fontWeight(.semibold)
+                    Text(booking.date.formatted(date: .long, time: .omitted)).font(.body).fontWeight(.semibold)
                 }
                 Divider()
                 
@@ -82,7 +94,7 @@ struct BookingSummarySheetComponent: View {
                     Text("Participants").font(.body)
                     Spacer()
                     if booking.participants.isEmpty {
-                        Text("No participants selected")
+                        Text("No participants")
                             .font(.body)
                             .foregroundStyle(.secondary)
                     } else {
@@ -98,36 +110,47 @@ struct BookingSummarySheetComponent: View {
                 }
                 Divider()
             }.padding(.top, 24).frame(maxWidth: 750)
-            VStack(){
-                Text("Add this booking to iCal")
-                    .font(.headline)
-                    .multilineTextAlignment(.center)
-                
-                Text("Scan this QR code to automatically create event in your iCal and get reminders.")
-                    .font(.footnote)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal)
-                
-                if let qrCode = qrCodeImage {
-
-                    qrCode
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 250, height: 250)
-                    
-                    
-                }
-            }
         }
-        .onAppear {
-            let iCalString = generateQRCodeFromBooking(booking)
-            self.qrCodeImage = generateQRCode(from: iCalString)
-        }
-        .padding(.horizontal, 48)
-        .padding(.vertical, 24)
-        
-        
     }
-       
-}
 
+
+    private var cancelButton: some View {
+        Button(role: .destructive) {
+            isShowingCancelModal = true
+        } label: {
+            Text("Cancel Meeting")
+                .fontWeight(.bold)
+                .frame(maxWidth: .infinity)
+                .padding()
+                .background(Color.red.opacity(0.15))
+                .foregroundColor(.red)
+                .cornerRadius(12)
+        }
+    }
+
+    private var modalOverlay: some View {
+        ZStack {
+            Color.black.opacity(0.4)
+                .ignoresSafeArea()
+                .onTapGesture {
+                    isShowingCancelModal = false
+                }
+
+            CancelBookingView(
+                booking: booking,
+                bookingController: BookingController(database: databaseVM.database),
+                onCancellationSuccess: {
+                    isShowingCancelModal = false
+                    dismiss()
+                    onDismissRefresh()
+                }
+            )
+            .padding()
+            .frame(maxWidth: 400)
+            .background(Color(.systemBackground))
+            .cornerRadius(20)
+            .shadow(radius: 20)
+            .zIndex(1)
+        }
+    }
+}

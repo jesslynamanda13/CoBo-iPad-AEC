@@ -16,6 +16,7 @@ struct BookingSummaryView: View {
     var meetingName: String
     var purpose: BookingPurpose
     var participants: [User]
+    @State private var isSaving = false
     @State private var booking: Booking?
     @State private var step = 2
     @EnvironmentObject var databaseVM : DataViewModel
@@ -102,6 +103,23 @@ struct BookingSummaryView: View {
             
             
         }
+        .overlay(
+            Group {
+                if isSaving {
+                    VStack {
+                        Spacer()
+                        Text("Booking is saving...")
+                            .padding()
+                            .background(Color.black.opacity(0.8))
+                            .foregroundColor(.white)
+                            .cornerRadius(10)
+                            .padding(.bottom, 40)
+                    }
+                    .transition(.opacity)
+                    .animation(.easeInOut(duration: 0.3), value: isSaving)
+                }
+            }
+        )
         .padding(.horizontal, 32)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
         .overlay(
@@ -111,6 +129,7 @@ struct BookingSummaryView: View {
                     Button(
                         action:{
                             booking = Booking(
+                                recordName: "",
                                 meetingName: meetingName,
                                 coordinator: coordinator,
                                 purpose: purpose,
@@ -120,8 +139,16 @@ struct BookingSummaryView: View {
                                 collabSpace: selectedCollabSpace
                             )
                             if let booking = booking {
-                                insertBooking(booking: booking);
-                                path.append(.bookingSuccess(booking))
+                                isSaving = true
+                                insertBooking(booking: booking) { success in
+                                    isSaving = false
+                                    if success {
+                                        path.append(.bookingSuccess(booking))
+                                    } else {
+                                        print("Booking failed to save.")
+                                    }
+                                }
+
                             }
                             
                         }
@@ -156,10 +183,11 @@ struct BookingSummaryView: View {
         .toolbar(.hidden, for: .tabBar)
     }
     
-    func insertBooking(booking: Booking){
+    func insertBooking(booking: Booking, completion: @escaping (Bool) -> Void) {
         let bookingController = BookingController(database: databaseVM.database)
-        bookingController.insertBookingWithReferences(booking: booking)
+        bookingController.insertBookingWithReferences(booking: booking, completion: completion)
     }
+    
     func formatDate(_ date: Date) -> String {
         let formatter = DateFormatter()
         formatter.dateFormat = "EEEE, d MMMM yyyy"

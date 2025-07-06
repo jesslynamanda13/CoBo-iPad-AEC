@@ -68,6 +68,19 @@ enum BookingPurpose: Codable, Equatable, Hashable{
 }
 
 extension BookingPurpose {
+    init(stringValue: String) {
+        switch stringValue {
+        case "Group Discussion":
+            self = .groupDiscussion
+        case "Personal Mentoring":
+            self = .personalMentoring
+        case "Meeting":
+            self = .meeting
+        default:
+            self = .others(stringValue)
+        }
+    }
+    
     static var allValues: [BookingPurpose] {
         return [.groupDiscussion, .personalMentoring, .meeting, .others("")]
     }

@@ -11,6 +11,7 @@ import SwiftUI
 
 @Model
 class Booking: Hashable, Identifiable {
+    @Attribute(.unique) var recordName: String
     var meetingName: String
     var coordinator: User
     var purpose: BookingPurpose
@@ -21,6 +22,8 @@ class Booking: Hashable, Identifiable {
     var collabSpace: CollabSpace
     var status: BookingStatus
     var checkInCode: String?
+    
+    var id: String {recordName}
     
     
     func getStatus() -> String {
@@ -36,7 +39,8 @@ class Booking: Hashable, Identifiable {
         }
     }
     
-    init(meetingName: String, coordinator: User, purpose: BookingPurpose, date: Date, participants: [User] = [], timeslot: Timeslot, collabSpace: CollabSpace, status: BookingStatus = .notCheckedIn, checkInCode: String = "") {
+    init(recordName:String, meetingName: String, coordinator: User, purpose: BookingPurpose, date: Date, participants: [User] = [], timeslot: Timeslot, collabSpace: CollabSpace, status: BookingStatus = .notCheckedIn, checkInCode: String = "") {
+        self.recordName = recordName
         self.meetingName = meetingName
         self.coordinator = coordinator
         self.purpose = purpose

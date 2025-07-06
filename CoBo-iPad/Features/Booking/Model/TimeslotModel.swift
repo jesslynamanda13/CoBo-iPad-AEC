@@ -9,9 +9,19 @@ import Foundation
 import SwiftData
 
 
+enum TimeslotRelevance: Int, Comparable {
+    case now = 0
+    case upcoming = 1
+    case past = 2
+    
+    static func < (lhs: TimeslotRelevance, rhs: TimeslotRelevance) -> Bool {
+        lhs.rawValue < rhs.rawValue
+    }
+}
+
 struct Timeslot: Hashable, Identifiable, Codable
 {
-   
+    
     @Attribute(.unique) var recordName: String
     var startHour: Double
     var endHour: Double
@@ -51,6 +61,25 @@ struct Timeslot: Hashable, Identifiable, Codable
         let stringMinute = minute < 10 ? "0\(minute)" : String(minute)
         
         return "\(stringHour):\(stringMinute)"
+    }
+    
+    func getRelevance(for bookingDate: Date) -> TimeslotRelevance {
+        let calendar = Calendar.current
+        let now = Date()
+        
+        let startOfDay = calendar.startOfDay(for: bookingDate)
+        guard let startTime = calendar.date(byAdding: .minute, value: Int(self.startHour * 60), to: startOfDay),
+              let endTime = calendar.date(byAdding: .minute, value: Int(self.endHour * 60), to: startOfDay) else {
+            return .past
+        }
+        
+        if now >= startTime && now <= endTime {
+            return .now
+        } else if now < startTime {
+            return .upcoming
+        } else {
+            return .past
+        }
     }
     static func == (lhs: Timeslot, rhs: Timeslot) -> Bool {
         lhs.id == rhs.id

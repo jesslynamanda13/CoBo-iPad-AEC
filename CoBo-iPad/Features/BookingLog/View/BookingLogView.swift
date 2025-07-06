@@ -11,8 +11,7 @@ struct BookingLogView:View{
     let screenWidth = UIScreen.main.bounds.width
     
     @EnvironmentObject var dataViewModel: DataViewModel
-    @StateObject var bookSpaceViewModel: BookSpaceViewModel
-    @StateObject var collabSpaceViewModel: CollabSpaceViewModel
+    @StateObject var bookingLogViewModel: BookingLogViewModel
     @StateObject var userViewModel: UserViewModel
     
     var body: some View{
@@ -34,7 +33,8 @@ struct BookingLogView:View{
                     .padding(.horizontal, 16)
                 }
                 HStack(alignment: .top, spacing: 32){
-                    CalendarComponent(selectedDate: $bookSpaceViewModel.selectedDate).frame(maxWidth: 350).padding(.top, 24)
+                    CalendarComponent(selectedDate: $bookingLogViewModel.selectedDate).frame(maxWidth: 350).padding(.top, 24)
+                    BookingLogManager(bookingLogVM: bookingLogViewModel).frame(minHeight: 700)
 //                    CollabSpaceManager(
 //                        collabSpaceVM: collabSpaceViewModel,
 //                        selectedCollabSpace: $selectedCollabSpace,
@@ -45,8 +45,8 @@ struct BookingLogView:View{
                 .padding(.horizontal, 16)
             }
             .frame(alignment: .top)
-            .onChange(of: bookSpaceViewModel.selectedDate) { newDate in
-                collabSpaceViewModel.selectedDate = newDate
+            .onChange(of: bookingLogViewModel.selectedDate) { newDate in
+                bookingLogViewModel.selectedDate = newDate
                
             }
             

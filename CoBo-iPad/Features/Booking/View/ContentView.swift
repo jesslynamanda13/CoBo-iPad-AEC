@@ -19,12 +19,8 @@ struct ContentView: View {
                 Label("Book Space", systemImage: "calendar.badge.plus")
             }
 
-            BookingLogView(bookSpaceViewModel: BookSpaceViewModel(),
-                        collabSpaceViewModel: CollabSpaceViewModel(
-                            selectedDate: Date(),
-                            database: dataViewModel.database
-                        ),
-                        userViewModel: UserViewModel(database: dataViewModel.database))
+            BookingLogView(bookingLogViewModel: BookingLogViewModel(selectedDate: Date(), database: dataViewModel.database), userViewModel: UserViewModel(database: dataViewModel.database))
+                           
                 .tabItem {
                     Label("Booking Log", systemImage: "list.bullet.rectangle")
                 }

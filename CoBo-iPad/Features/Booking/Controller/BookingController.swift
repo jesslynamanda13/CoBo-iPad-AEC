@@ -15,7 +15,7 @@ class BookingController {
            self.database = database
        }
     
-    func insertBookingWithReferences(booking: Booking) {
+    func insertBookingWithReferences(booking: Booking, completion: @escaping (Bool) -> Void) {
         let timeslotRecordName = booking.timeslot.recordName
         let collabSpaceRecordName = booking.collabSpace.recordName
         let coordinatorRecordName = booking.coordinator.recordName
@@ -44,7 +44,6 @@ class BookingController {
                 bookingRecord["BookingStatus"] = "Not Checked In"
                 bookingRecord["CheckInCode"] = booking.checkInCode ?? ""
                 bookingRecord["Date"] = booking.date
-                bookingRecord["Status"] = booking.status.rawValue
                 bookingRecord["TimeSlotID"] = CKRecord.Reference(record: timeslotRecord, action: .none)
                 bookingRecord["CollabSpaceRecordID"] = CKRecord.Reference(record: collabSpaceRecord, action: .none)
                 let participantReferences = participantRecords.map {
@@ -55,9 +54,10 @@ class BookingController {
                 self.database.save(bookingRecord) { record, error in
                     if let error = error {
                         print("Error saving booking: \(error)")
+                        completion(false)
                     } else {
                         print("Booking saved successfully.")
-                       
+                        completion(true)
                     }
                 }
             }
@@ -65,6 +65,43 @@ class BookingController {
     }
 
 
+    func cancelBooking(booking: Booking, enteredCode: String, completion: @escaping (Result<Void, CancellationError>) -> Void) {
+            guard let correctCode = booking.checkInCode, enteredCode == correctCode else {
+                completion(.failure(.invalidCheckInCode))
+                return
+            }
+
+        let recordID = CKRecord.ID(recordName: booking.recordName)
+            
+            database.fetch(withRecordID: recordID) { [weak self] (record, error) in
+                if let error = error {
+                    print("Error fetching record for cancellation: \(error)")
+                    completion(.failure(.cloudKitError(error)))
+                    return
+                }
+
+                guard let record = record else {
+                    completion(.failure(.recordNotFound))
+                    return
+                }
+
+                record["BookingStatus"] = "Cancelled" as CKRecordValue
+
+                self?.database.save(record) { (savedRecord, error) in
+                    DispatchQueue.main.async {
+                        if let error = error {
+                            print("Error saving cancelled record: \(error)")
+                            completion(.failure(.cloudKitError(error)))
+                        } else if savedRecord != nil {
+                            print("Booking \(booking.id) successfully cancelled.")
+                            completion(.success(()))
+                        } else {
+                            completion(.failure(.unexpectedError))
+                        }
+                    }
+                }
+            }
+        }
     func fetchRecord(recordType: String, recordName: String, completion: @escaping (CKRecord?) -> Void) {
         let recordID = CKRecord.ID(recordName: recordName)
         database.fetch(withRecordID: recordID) { record, error in
@@ -138,12 +175,12 @@ class BookingController {
     func generateUniqueCheckInCode(existingCodes: Set<String>) -> String {
         var code: String
         repeat {
-            code = String(format: "%06d", Int.random(in: 0...999999))
+            let randomNumber = Int.random(in: 0...9999)
+            code = String(format: "%04d", randomNumber)
         } while existingCodes.contains(code)
         return code
     }
-    
-    
+
 
 }
 extension BookingController {
@@ -182,7 +219,6 @@ extension BookingController {
             bookingRecord["Purpose"] = purpose
             bookingRecord["Date"] = date
             bookingRecord["BookingStatus"] = "Not Checked In"
-            bookingRecord["Status"] = "Pending"
             bookingRecord["CheckInCode"] = self.generateUniqueCheckInCode(existingCodes: [])
             bookingRecord["TimeSlotID"] = CKRecord.Reference(record: timeslotRecord, action: .none)
             bookingRecord["CollabSpaceRecordID"] = CKRecord.Reference(record: collabSpaceRecord, action: .none)
@@ -198,5 +234,25 @@ extension BookingController {
         }
 
         database.add(fetchOperation)
+    }
+}
+
+enum CancellationError: Error, LocalizedError {
+    case invalidCheckInCode
+    case recordNotFound
+    case cloudKitError(Error)
+    case unexpectedError
+
+    var errorDescription: String? {
+        switch self {
+        case .invalidCheckInCode:
+            return "The provided check-in code is incorrect. Please try again."
+        case .recordNotFound:
+            return "The booking record could not be found on the server."
+        case .cloudKitError(let error):
+            return "A server error occurred: \(error.localizedDescription)"
+        case .unexpectedError:
+            return "An unexpected error occurred. Please try again."
+        }
     }
 }

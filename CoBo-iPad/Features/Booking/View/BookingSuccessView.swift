@@ -10,7 +10,9 @@ import SwiftUI
 
 struct BookingSuccessView: View {
     @Binding var path: [BookSpaceNavigation]
-
+    @State private var animate = false
+    @State private var repeatCount = 0
+    let maxRepeats = 3
     var booking: Booking
     @State private var step = 3
     @EnvironmentObject var dataViewModel: DataViewModel
@@ -22,11 +24,18 @@ struct BookingSuccessView: View {
                 VStack {
                     VStack(alignment: .center, spacing: 32) {
                         VStack(spacing: 12) {
-                            Image("book-success-icon")
+                            Image(systemName: "checkmark.circle.fill")
                                 .resizable()
-                                .frame(maxWidth: 120, maxHeight: 120)
-                                .padding(.bottom, 24)
-
+                                .frame(width: 100, height: 100)
+                                .foregroundColor(.green)
+                                .scaleEffect(animate ? 1 : 0.5)
+                                .rotationEffect(.degrees(animate ? 0 : -180))
+                                .opacity(animate ? 1 : 0)
+                                .animation(.spring(response: 0.6, dampingFraction: 0.6)
+                                           , value: animate)
+                                .onAppear {
+                                    startRepeatingAnimation()
+                                        }
                             Text("Your Booking is Placed!")
                                 .font(.title)
                                 .fontWeight(.bold)
@@ -34,24 +43,18 @@ struct BookingSuccessView: View {
                         }
 
                         VStack(spacing: 12) {
-                            Text("Save This Check-In Code")
+                            Text("This is your booking PIN")
                                 .font(.title3)
                                 .fontWeight(.bold)
                             CodeDisplayComponent(code: booking.checkInCode ?? "XXXXXX")
                             (
-                                Text("When approaching meeting time, check-in is ") +
-                                Text("required 15 minutes ").bold() +
-                                Text("before the booking starts.")
+                                Text("Remember and save this PIN if you wish to reschedule or cancel your booking").bold()
                             )
                             .multilineTextAlignment(.center)
                             .font(.body)
                             .frame(maxWidth: 390)
 
-                            Text("Late check-in will cause your booking to be canceled.")
-                                .multilineTextAlignment(.center)
-                                .font(.subheadline)
-                                .frame(maxWidth: 380)
-                                .padding(.top, 12)
+                           
                         }
                     }
                     .frame(maxHeight: .infinity)
@@ -106,5 +109,15 @@ struct BookingSuccessView: View {
             .background(Color.white.ignoresSafeArea(edges: .bottom))
         }.navigationBarBackButtonHidden(true).background(DisableBackSwipeGesture())
     }
+    func startRepeatingAnimation() {
+            Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { timer in
+                animate.toggle()
+                repeatCount += 1
+                if repeatCount >= maxRepeats * 2 {
+                    timer.invalidate()
+                    animate = true // set final state
+                }
+            }
+        }
     
 }
